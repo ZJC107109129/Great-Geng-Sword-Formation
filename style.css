@@ -1,0 +1,354 @@
+/* 大庚剑阵 —— 玄夜 / 剑光青 / 符金 的克制版式
+ * 常驻文字只保留：题名、印章、四种手印提示；摄像机小窗可拖动。
+ * 演示模式（D）只留剑阵与题名，干净适合录屏。
+ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #05080f;
+  --text: #e6f7ea;
+  --cyan: #8cf5a0;
+  --gold: #f2c879;
+  --dim: rgba(186, 218, 238, 0.55);
+  --faint: rgba(150, 192, 214, 0.32);
+  --line: rgba(140, 240, 160, 0.18);
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif;
+  user-select: none;
+  cursor: default;
+  -webkit-font-smoothing: antialiased;
+}
+
+#stage { position: fixed; inset: 0; display: block; }
+.hidden { display: none !important; }
+
+/* ---------- 左下题名：竖排，一笔剑意 ---------- */
+#titleBlock {
+  position: fixed;
+  left: clamp(24px, 3.4vw, 66px);
+  bottom: clamp(26px, 4.8vh, 60px);
+  z-index: 3;
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(12px, 1.3vw, 22px);
+  pointer-events: none;
+}
+#titleBlock h1 {
+  writing-mode: vertical-rl;
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", serif;
+  font-size: clamp(32px, 3.5vw, 56px);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  line-height: 1.06;
+  color: #eeffee;
+  text-shadow: 0 0 14px rgba(110, 230, 130, 0.55), 0 0 46px rgba(60, 190, 110, 0.26);
+}
+.title-sub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 4px;
+}
+.seal {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px;
+  background: #9e3b2c;
+  color: #ffe9dd;
+  border-radius: 2px;
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", serif;
+  font-size: 13px;
+  line-height: 1;
+  box-shadow: 0 0 18px rgba(200, 70, 50, 0.35), inset 0 0 0 1px rgba(255, 240, 230, 0.16);
+  transform: rotate(2deg);
+}
+.title-sub small {
+  writing-mode: vertical-rl;
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", serif;
+  font-size: clamp(11px, 0.85vw, 13px);
+  letter-spacing: 0.34em;
+  color: var(--dim);
+}
+
+/* ---------- 底部手印提示 ---------- */
+#modeChips {
+  position: fixed;
+  left: 50%; bottom: clamp(20px, 3.4vh, 38px);
+  transform: translateX(-50%);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  pointer-events: none;
+}
+.chip {
+  padding: 7px 13px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(6, 18, 12, 0.55);
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", serif;
+  font-size: 12px;
+  letter-spacing: 0.13em;
+  white-space: nowrap;
+  color: rgba(168, 204, 225, 0.62);
+  backdrop-filter: blur(6px);
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.2;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: color 0.3s ease, border-color 0.3s ease, background 0.3s ease,
+              box-shadow 0.3s ease, opacity 0.3s ease;
+  opacity: 0.8;
+}
+.chip:hover {
+  border-color: rgba(140, 240, 160, 0.44);
+  color: rgba(214, 244, 255, 0.90);
+}
+.chip b { font-weight: 600; margin-right: 4px; color: rgba(188, 228, 248, 0.82); }
+.chip.on {
+  opacity: 1;
+  border-color: rgba(140, 240, 160, 0.62);
+  background: rgba(12, 44, 28, 0.72);
+  color: #ecfff2;
+  box-shadow: 0 0 18px rgba(110, 230, 130, 0.22), inset 0 0 12px rgba(110, 230, 130, 0.10);
+}
+.chip.on b { color: var(--cyan); }
+
+/* ---------- 回看小窗 ---------- */
+#camWrap {
+  position: fixed;
+  right: clamp(16px, 2.4vw, 38px);
+  bottom: clamp(16px, 3.2vh, 38px);
+  width: clamp(176px, 21vw, 300px);
+  aspect-ratio: 16 / 9;
+  z-index: 6;
+  border: 1px solid rgba(140, 240, 160, 0.30);
+  border-radius: 5px;
+  overflow: hidden;
+  background: #071018;
+  cursor: grab;
+  touch-action: none;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.55), 0 0 22px rgba(80, 200, 120, 0.10);
+}
+#camWrap.dragging { cursor: grabbing; }
+#cam {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  display: block;
+  pointer-events: none;
+}
+#skel {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+#handTags {
+  position: absolute;
+  left: 0; right: 0; bottom: 4px;
+  display: flex; justify-content: space-between;
+  padding: 0 8px;
+  pointer-events: none;
+}
+.hand-tag {
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  color: #8cf5a0;
+  opacity: 0.2;
+  transition: opacity 0.2s ease;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+.hand-tag.on { opacity: 1; text-shadow: 0 0 10px rgba(110, 230, 130, 0.8); }
+
+/* ---------- 短暂提示 ---------- */
+#toast {
+  position: fixed;
+  left: 50%; top: clamp(22px, 4vh, 50px);
+  transform: translate(-50%, -6px);
+  z-index: 4;
+  padding: 6px 16px;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  color: var(--dim);
+  background: rgba(6, 18, 12, 0.58);
+  border: 1px solid rgba(140, 240, 160, 0.14);
+  border-radius: 3px;
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- 加载诊断 ---------- */
+#errDetail {
+  position: fixed;
+  left: 50%; top: clamp(62px, 9vh, 96px);
+  transform: translateX(-50%);
+  z-index: 5;
+  max-width: min(72vw, 780px);
+  padding: 9px 14px;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.7;
+  letter-spacing: 0;
+  color: #ffb1a0;
+  background: rgba(10, 20, 30, 0.92);
+  border-left: 2px solid #d2634c;
+  border-radius: 2px;
+  word-break: break-all;
+  white-space: pre-wrap;
+  pointer-events: none;
+}
+
+/* ---------- 入口页 ---------- */
+#gate {
+  position: fixed; inset: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 clamp(28px, 7vw, 120px);
+  background:
+    radial-gradient(ellipse at 72% 28%, rgba(30, 110, 70, 0.26), transparent 60%),
+    radial-gradient(ellipse at 18% 92%, rgba(120, 74, 32, 0.12), transparent 55%),
+    linear-gradient(180deg, #05080e 0%, #070c16 58%, #04060a 100%);
+  transition: opacity 0.9s ease;
+  overflow: hidden;
+}
+#gate.hide { opacity: 0; pointer-events: none; }
+.gate-panel { max-width: 640px; position: relative; z-index: 2; }
+.gate-overline {
+  font-size: 11px;
+  letter-spacing: 0.38em;
+  color: rgba(150, 190, 215, 0.48);
+  margin-bottom: 20px;
+}
+.gate-panel h2 {
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", serif;
+  font-size: clamp(50px, 5.2vw, 86px);
+  font-weight: 600;
+  letter-spacing: 0.20em;
+  line-height: 1.15;
+  color: #f0fff4;
+  text-shadow: 0 0 26px rgba(110, 230, 130, 0.48), 0 0 76px rgba(60, 190, 110, 0.24);
+}
+.gate-guide {
+  margin-top: 18px;
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", serif;
+  font-size: clamp(14px, 1.05vw, 17px);
+  letter-spacing: 0.15em;
+  color: rgba(190, 220, 240, 0.62);
+}
+.gesture-list {
+  margin-top: clamp(20px, 3.2vh, 30px);
+  display: flex; flex-direction: column; gap: 12px;
+}
+.gesture-row {
+  display: flex; align-items: baseline; gap: 14px;
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", serif;
+  font-size: clamp(13px, 0.98vw, 15px);
+  letter-spacing: 0.10em;
+  color: rgba(180, 212, 232, 0.60);
+}
+.g-key {
+  flex: 0 0 auto;
+  min-width: 62px;
+  text-align: center;
+  padding: 3px 10px;
+  border: 1px solid rgba(140, 240, 160, 0.22);
+  border-radius: 3px;
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  color: #acefbc;
+  background: rgba(10, 36, 24, 0.42);
+}
+#startBtn {
+  margin-top: clamp(24px, 4vh, 44px);
+  padding: 11px 3px 10px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(180, 240, 190, 0.45);
+  font-family: inherit;
+  font-size: 16px;
+  letter-spacing: 0.58em;
+  text-indent: 0.58em;
+  color: #e0fdea;
+  cursor: pointer;
+  transition: color 0.35s, border-color 0.35s, letter-spacing 0.35s, text-shadow 0.35s;
+}
+#startBtn:hover {
+  color: #ffffff;
+  border-color: #90f0a8;
+  letter-spacing: 0.72em;
+  text-shadow: 0 0 18px rgba(140, 240, 160, 0.7);
+}
+.gate-note {
+  margin-top: 26px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: rgba(150, 190, 210, 0.34);
+  line-height: 1.9;
+}
+.gate-env {
+  margin-top: 10px;
+  color: rgba(242, 200, 121, 0.72);
+}
+.gate-env[hidden] { display: none; }
+.gate-mark {
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", serif;
+  font-size: clamp(150px, 24vw, 330px);
+  line-height: 1;
+  color: rgba(140, 220, 160, 0.055);
+  text-shadow: 0 0 90px rgba(90, 200, 255, 0.10);
+  pointer-events: none;
+  user-select: none;
+  transform: translateY(-2%);
+}
+
+/* ---------- 开场揭幕 ---------- */
+#reveal { position: fixed; inset: 0; z-index: 12; pointer-events: none; }
+.reveal-veil {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, #04060a 0%, #060a12 100%);
+  opacity: 1;
+  transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1) 0.1s;
+}
+#reveal.play .reveal-veil { opacity: 0; }
+#reveal.fade { opacity: 0; transition: opacity 0.4s ease; }
+
+/* ---------- 演示模式：只留剑阵与题名 ---------- */
+body.demo #camWrap,
+body.demo #toast,
+body.demo #errDetail,
+body.demo #modeChips { display: none !important; }
+body.demo #titleBlock {
+  transform: scale(1.14);
+  transform-origin: left bottom;
+}
+
+/* ---------- 纸色过渡（D / Esc） ---------- */
+#blackout {
+  position: fixed; inset: 0; z-index: 20;
+  background: #04060a;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.16s ease;
+}
+#blackout.on { opacity: 1; }
+
+/* ---------- 窄屏 ---------- */
+@media (max-width: 760px) {
+  #titleBlock { left: 20px; bottom: 22px; gap: 10px; }
+  #titleBlock h1 { font-size: 30px; }
+  #modeChips { gap: 6px; bottom: 16px; flex-wrap: wrap; justify-content: center; width: 96%; }
+  .chip { padding: 5px 9px 6px; font-size: 10px; }
+  #camWrap { display: none; }
+  #gate { padding: 0 24px; align-items: flex-start; padding-top: 12vh; }
+  .gate-panel h2 { font-size: 38px; }
+  .gate-mark { display: none; }
+}

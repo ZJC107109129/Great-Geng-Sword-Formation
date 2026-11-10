@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大庚剑阵 · 万剑归宗</title>
+<link rel="stylesheet" href="style.css">
+<!-- 静态预取手势库：入口路径与 app.js 里 CONFIG.mp.bundle 必须一致 -->
+<link rel="modulepreload" href="./vendor/mediapipe/vision_bundle.mjs">
+</head>
+<body>
+  <canvas id="stage"></canvas>
+
+  <!-- 左下：竖排题名与朱砂印 -->
+  <div id="titleBlock">
+    <h1>大庚剑阵</h1>
+    <div class="title-sub">
+      <span class="seal"><span>庚</span></span>
+      <small>万剑归宗</small>
+    </div>
+  </div>
+
+  <!-- 底部：四种手印，当前形态亮起 -->
+  <div id="modeChips">
+    <button type="button" class="chip" data-mode="stream" title="数字键 1"><b>双指</b>剑流</button>
+    <button type="button" class="chip" data-mode="scatter" title="数字键 2"><b>三指</b>散剑</button>
+    <button type="button" class="chip" data-mode="ring" title="数字键 3"><b>五指</b>剑环</button>
+    <button type="button" class="chip" data-mode="ball" title="数字键 4"><b>握拳</b>剑球</button>
+  </div>
+
+  <!-- 右下：摄像头回看小窗（可拖动） -->
+  <div id="camWrap" class="hidden">
+    <video id="cam" autoplay playsinline muted></video>
+    <canvas id="skel" width="1280" height="720"></canvas>
+    <div id="handTags">
+      <span id="tagLeft" class="hand-tag">左手</span>
+      <span id="tagRight" class="hand-tag">右手</span>
+    </div>
+  </div>
+
+  <div id="toast" aria-live="polite"></div>
+  <div id="errDetail" class="hidden" aria-live="polite"></div>
+
+  <!-- 入口页：操作说明只讲一次 -->
+  <div id="gate">
+    <div class="gate-panel">
+      <p class="gate-overline">MASTER OF THE SWORD ARRAY · 赛博修仙</p>
+      <h2>大庚剑阵</h2>
+      <p class="gate-guide">起手结印，万剑自虚空来。</p>
+      <div class="gesture-list">
+        <div class="gesture-row"><span class="g-key">双指</span><span>剑流随指而动，如江河奔涌</span></div>
+        <div class="gesture-row"><span class="g-key">三指</span><span>散剑四方，剑气纵横</span></div>
+        <div class="gesture-row"><span class="g-key">五指</span><span>结环为阵，剑光绕身</span></div>
+        <div class="gesture-row"><span class="g-key">握拳</span><span>聚剑成球，锋芒内敛</span></div>
+      </div>
+      <button id="startBtn" type="button">入 阵</button>
+      <p class="gate-note">无摄像头也可：移动鼠标引阵 · 数字键 1–4 换印 · C 摄像头 · D 演示</p>
+      <p class="gate-note gate-env" id="envNote" hidden></p>
+    </div>
+    <div class="gate-mark" aria-hidden="true">剑</div>
+  </div>
+
+  <div id="reveal" class="hidden" aria-hidden="true"><div class="reveal-veil"></div></div>
+  <div id="blackout" aria-hidden="true"></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
